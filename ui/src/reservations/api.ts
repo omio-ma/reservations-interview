@@ -16,7 +16,7 @@ const ReservationSchema = z.object({
   RoomNumber: z.string(),
   GuestEmail: z.string().email(),
   Start: z.string(),
-  End: z.string(),
+  End: z.string()
 });
 
 type Reservation = z.infer<typeof ReservationSchema>;
@@ -26,16 +26,24 @@ export function bookRoom(booking: NewReservation) {
   const newReservation = {
     ...booking,
     Start: toIsoStr(booking.Start),
-    End: toIsoStr(booking.End),
+    End: toIsoStr(booking.End)
   };
 
   // TODO post some json with ky.post()
-  return Promise.resolve<Reservation>(newReservation as any as Reservation);
+  return ky
+    .post("api/reservation", {
+      json: newReservation, // Send the JSON payload
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+    .json()
+    .then(ReservationSchema.parseAsync);
 }
 
 const RoomSchema = z.object({
   number: z.string(),
-  state: z.number(),
+  state: z.number()
 });
 
 const RoomListSchema = RoomSchema.array();
@@ -43,6 +51,6 @@ const RoomListSchema = RoomSchema.array();
 export function useGetRooms() {
   return useQuery({
     queryKey: ["rooms"],
-    queryFn: () => ky.get("api/room").json().then(RoomListSchema.parseAsync),
+    queryFn: () => ky.get("api/room").json().then(RoomListSchema.parseAsync)
   });
 }
