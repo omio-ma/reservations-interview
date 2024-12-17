@@ -1,5 +1,6 @@
 using System.Data;
-using api.Services;
+using Services;
+using Services.Interfaces;
 using Db;
 using Microsoft.Data.Sqlite;
 using Repositories;
@@ -9,16 +10,27 @@ var builder = WebApplication.CreateBuilder(args);
 
 {
     var Services = builder.Services;
+
+    // Database connection
     var connectionString =
         builder.Configuration.GetConnectionString("ReservationsDb")
         ?? "Data Source=reservations.db;Cache=Shared";
 
-    Services.AddSingleton(_ => new SqliteConnection(connectionString));
-    Services.AddSingleton<IDbConnection>(sp => sp.GetRequiredService<SqliteConnection>());
-    Services.AddSingleton<GuestRepository>();
-    Services.AddSingleton<RoomRepository>();
+    Services.AddTransient(_ => new SqliteConnection(connectionString));
+    Services.AddTransient<IDbConnection>(sp => sp.GetRequiredService<SqliteConnection>());
+
+
+    // Repositories
+    Services.AddScoped<IGuestRepository, GuestRepository>();
+    Services.AddScoped<IRoomRepository, RoomRepository>();
     Services.AddScoped<IReservationRepository, ReservationRepository>();
+
+    // Services
     Services.AddScoped<IReservationService, ReservationService>();
+    Services.AddScoped<IRoomService, RoomService>();
+    Services.AddScoped<IGuestService, GuestService>();
+
+    // Other services
     Services.AddMvc(opt =>
     {
         opt.EnableEndpointRouting = false;

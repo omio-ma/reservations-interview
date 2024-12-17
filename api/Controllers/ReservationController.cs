@@ -1,28 +1,25 @@
-using api.Models;
-using api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Errors;
 using Repositories;
+using Services.Interfaces;
 
 namespace Controllers
 {
     [Tags("Reservations"), Route("reservation")]
     public class ReservationController : Controller
     {
-        private IReservationRepository _repository;
         private IReservationService _service;
 
         public ReservationController(IReservationRepository reservationRepository, IReservationService reservationService)
         {
-            _repository = reservationRepository;
             _service = reservationService;
         }
 
         [HttpGet, Produces("application/json"), Route("")]
         public async Task<ActionResult<Reservation>> GetReservations()
         {
-            var reservations = await _repository.GetReservations();
+            var reservations = await _service.GetReservations();
 
             return Json(reservations);
         }
@@ -32,7 +29,7 @@ namespace Controllers
         {
             try
             {
-                var reservation = await _repository.GetReservation(reservationId);
+                var reservation = await _service.GetReservation(reservationId);
                 return Json(reservation);
             }
             catch (NotFoundException)
@@ -68,7 +65,7 @@ namespace Controllers
         [HttpDelete, Produces("application/json"), Route("{reservationId}")]
         public async Task<IActionResult> DeleteReservation(Guid reservationId)
         {
-            var result = await _repository.DeleteReservation(reservationId);
+            var result = await _service.DeleteReservation(reservationId);
 
             return result ? NoContent() : NotFound();
         }

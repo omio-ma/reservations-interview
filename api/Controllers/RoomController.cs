@@ -1,24 +1,24 @@
+using Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Errors;
-using Repositories;
 
 namespace Controllers
 {
     [Tags("Rooms"), Route("room")]
     public class RoomController : Controller
     {
-        private RoomRepository _repo { get; set; }
+        private IRoomService _service { get; set; }
 
-        public RoomController(RoomRepository roomRepository)
+        public RoomController(IRoomService roomRepository)
         {
-            _repo = roomRepository;
+            _service = roomRepository;
         }
 
         [HttpGet, Produces("application/json"), Route("")]
         public async Task<ActionResult<Room>> GetRooms()
         {
-            var rooms = await _repo.GetRooms();
+            var rooms = await _service.GetRooms();
 
             if (rooms == null)
             {
@@ -38,7 +38,7 @@ namespace Controllers
 
             try
             {
-                var room = await _repo.GetRoom(roomNumber);
+                var room = await _service.GetRoom(roomNumber);
 
                 return Json(room);
             }
@@ -51,7 +51,7 @@ namespace Controllers
         [HttpPost, Produces("application/json"), Route("")]
         public async Task<ActionResult<Room>> CreateRoom([FromBody] Room newRoom)
         {
-            var createdRoom = await _repo.CreateRoom(newRoom);
+            var createdRoom = await _service.CreateRoom(newRoom);
 
             if (createdRoom == null)
             {
@@ -69,7 +69,7 @@ namespace Controllers
                 return BadRequest("Invalid room ID - format is ###, ex 001 / 002 / 101");
             }
 
-            var deleted = await _repo.DeleteRoom(roomNumber);
+            var deleted = await _service.DeleteRoom(roomNumber);
 
             return deleted ? NoContent() : NotFound();
         }

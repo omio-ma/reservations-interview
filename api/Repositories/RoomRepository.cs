@@ -5,7 +5,7 @@ using Models.Errors;
 
 namespace Repositories
 {
-    public class RoomRepository
+    public class RoomRepository : IRoomRepository
     {
         private IDbConnection _db { get; set; }
 

@@ -5,7 +5,7 @@ using Models.Errors;
 
 namespace Repositories
 {
-    public class GuestRepository
+    public class GuestRepository : IGuestRepository
     {
         private IDbConnection _db { get; set; }
 

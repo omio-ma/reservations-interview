@@ -1,23 +1,23 @@
+using Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Models;
-using Repositories;
 
 namespace Controllers
 {
     [Tags("Guests"), Route("guest")]
     public class GuestController : Controller
     {
-        private GuestRepository _repo;
+        private IGuestService _service;
 
-        public GuestController(GuestRepository guestRepository)
+        public GuestController(IGuestService guestService)
         {
-            _repo = guestRepository;
+            _service = guestService;
         }
 
         [HttpGet, Produces("application/json"), Route("")]
         public async Task<ActionResult<Guest>> GetGuests()
         {
-            var guests = await _repo.GetGuests();
+            var guests = await _service.GetGuests();
 
             return Json(guests);
         }
