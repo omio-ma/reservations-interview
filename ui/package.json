@@ -6,7 +6,8 @@
     "start": "rsbuild dev",
     "build": "rsbuild build",
     "preview": "rsbuild preview",
-    "pretty:fix": "prettier --write ."
+    "pretty:fix": "prettier --write .",
+    "test": "jest"
   },
   "dependencies": {
     "@datepicker-react/styled": "^2.8.4",
@@ -25,9 +26,12 @@
   "devDependencies": {
     "@rsbuild/core": "1.1.9",
     "@rsbuild/plugin-react": "1.1.0",
+    "@types/jest": "^29.5.14",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.2",
+    "jest": "^29.7.0",
     "prettier": "^3.4.2",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.7.2"
   }
 }
