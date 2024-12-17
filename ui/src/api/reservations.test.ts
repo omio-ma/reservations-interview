@@ -16,8 +16,13 @@ describe("bookRoom", () => {
     End: fromDateStringToIso("2025-12-05T00:00:00.000Z")
   };
 
-  it("should send the correct payload", async () => {
-    await bookRoom(mockBooking);
+  it("should send the correct payload and return success", async () => {
+    (apiClient.post as jest.Mock).mockResolvedValue({
+      status: 200,
+      ok: true
+    });
+
+    const result = await bookRoom(mockBooking);
 
     expect(apiClient.post).toHaveBeenCalledWith("reservation", {
       json: {
@@ -29,6 +34,33 @@ describe("bookRoom", () => {
       headers: {
         "Content-Type": "application/json"
       }
+    });
+
+    expect(result).toEqual({ success: true });
+  });
+
+  it("should return an error if room is already booked (409)", async () => {
+    (apiClient.post as jest.Mock).mockResolvedValue({
+      status: 409,
+      ok: false
+    });
+
+    const result = await bookRoom(mockBooking);
+
+    expect(result).toEqual({
+      success: false,
+      error: "Room already booked for the selected dates."
+    });
+  });
+
+  it("should return an unexpected error on failure", async () => {
+    (apiClient.post as jest.Mock).mockRejectedValue(new Error("Network Error"));
+
+    const result = await bookRoom(mockBooking);
+
+    expect(result).toEqual({
+      success: false,
+      error: "Network Error"
     });
   });
 });

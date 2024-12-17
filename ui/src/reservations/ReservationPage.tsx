@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { useShowSuccessToast } from "../utils/toasts";
+import { useShowInfoToast, useShowSuccessToast } from "../utils/toasts";
 import { Grid, Heading, Section, Dialog } from "@radix-ui/themes";
 import { ReservationCard } from "./ReservationCard";
 import { LoadingCard } from "../components/LoadingCard";
 import { BookingDetailsModal } from "./BookingDetailsModal";
 import { useGetRooms } from "../queries/useGetRooms";
 import { NewReservation } from "../types/reservations";
-import { bookRoom } from "../api/reservations";
+import { useReservations } from "../queries/useReservations";
 
 const RESPONSIVE_GRID_COLS: React.ComponentProps<typeof Grid>["columns"] = {
   sm: "1",
@@ -21,13 +21,26 @@ export function ReservationPage() {
   const formattedRoomNumber = String(selectedRoomNumber).padStart(3, "0");
 
   const showToast = useShowSuccessToast("We have received your booking!");
+  const showInfoToast = useShowInfoToast(
+    "This room is already booked for the selected dates."
+  );
 
   function onClose() {
     setSelectedRoomNumber("");
   }
 
-  function onSubmit(booking: NewReservation) {
-    bookRoom(booking).then(onClose).then(showToast);
+  const { mutate: submitBooking } = useReservations({
+    onSuccess: () => {
+      showToast();
+      onClose();
+    },
+    onError: () => {
+      showInfoToast();
+    }
+  });
+
+  async function onSubmit(booking: NewReservation) {
+    submitBooking(booking);
   }
 
   const createClickHandler = (roomNumber: string) => () => {

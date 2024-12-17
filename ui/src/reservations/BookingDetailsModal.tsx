@@ -3,12 +3,12 @@ import { fromDateStringToIso } from "../utils/datetime";
 import {
   DateRangeInput,
   FocusedInput,
-  OnDatesChangeProps,
+  OnDatesChangeProps
 } from "@datepicker-react/styled";
 import { Box, Button, Dialog, Separator, TextField } from "@radix-ui/themes";
-import { NewReservation } from "./api";
 import { useState } from "react";
 import styled from "styled-components";
+import { NewReservation } from "../types/reservations";
 
 interface BookingDetailsModalProps {
   roomNumber: string;
@@ -23,7 +23,7 @@ interface BookingFormProps {
 /** Must be inside a Dialog.Root that container Dialog.Triggers elsewhere */
 export function BookingDetailsModal({
   roomNumber,
-  onSubmit,
+  onSubmit
 }: BookingDetailsModalProps) {
   return (
     <Dialog.Content size="4">
@@ -52,7 +52,7 @@ function BookingForm({ roomNumber, onSubmit }: BookingFormProps) {
   const [email, setEmail] = useState("");
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
     null,
-    null,
+    null
   ]);
   const [focusedInput, setFocusedInput] = useState<FocusedInput | null>(null);
   const showProcessingToast = useShowInfoToast("Processing booking...");
@@ -70,7 +70,7 @@ function BookingForm({ roomNumber, onSubmit }: BookingFormProps) {
       RoomNumber: roomNumber,
       GuestEmail: email,
       Start: fromDateStringToIso(dateRange[0]),
-      End: fromDateStringToIso(dateRange[1]),
+      End: fromDateStringToIso(dateRange[1])
     });
     return true;
   }

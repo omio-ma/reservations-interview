@@ -6,3 +6,9 @@ export const apiClient = ky.create({
     "Content-Type": "application/json"
   }
 });
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
