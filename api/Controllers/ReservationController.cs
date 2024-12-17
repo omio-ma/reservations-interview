@@ -1,3 +1,5 @@
+using api.Models;
+using api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Errors;
@@ -8,27 +10,29 @@ namespace Controllers
     [Tags("Reservations"), Route("reservation")]
     public class ReservationController : Controller
     {
-        private ReservationRepository _repo { get; set; }
+        private IReservationRepository _repository;
+        private IReservationService _service;
 
-        public ReservationController(ReservationRepository reservationRepository)
+        public ReservationController(IReservationRepository reservationRepository, IReservationService reservationService)
         {
-            _repo = reservationRepository;
+            _repository = reservationRepository;
+            _service = reservationService;
         }
 
         [HttpGet, Produces("application/json"), Route("")]
         public async Task<ActionResult<Reservation>> GetReservations()
         {
-            var reservations = await _repo.GetReservations();
+            var reservations = await _repository.GetReservations();
 
             return Json(reservations);
         }
 
         [HttpGet, Produces("application/json"), Route("{reservationId}")]
-        public async Task<ActionResult<Reservation>> GetRoom(Guid reservationId)
+        public async Task<ActionResult<Reservation>> GetRepository(Guid reservationId)
         {
             try
             {
-                var reservation = await _repo.GetReservation(reservationId);
+                var reservation = await _repository.GetReservation(reservationId);
                 return Json(reservation);
             }
             catch (NotFoundException)
@@ -40,23 +44,17 @@ namespace Controllers
         /// <summary>
         /// Create a new reservation, to generate the GUID ID on the server, send an Empty GUID (all 0s)
         /// </summary>
-        /// <param name="newBooking"></param>
+        /// <param name="reservationRequest"></param>
         /// <returns></returns>
         [HttpPost, Produces("application/json"), Route("")]
-        public async Task<ActionResult<Reservation>> BookReservation(
-            [FromBody] Reservation newBooking
+        public async Task<ActionResult<Reservation>> CreateReservation(
+            [FromBody] ReservationRequest reservationRequest
         )
         {
-            // Provide a real ID if one is not provided
-            if (newBooking.Id == Guid.Empty)
-            {
-                newBooking.Id = Guid.NewGuid();
-            }
-
             try
             {
-                var createdReservation = await _repo.CreateReservation(newBooking);
-                return Created($"/reservation/${createdReservation.Id}", createdReservation);
+                var createdReservation = await _service.CreateReservation(reservationRequest);
+                return CreatedAtAction(nameof(CreateReservation), new { reservationId = createdReservation.Id }, createdReservation);
             }
             catch (Exception ex)
             {
@@ -70,7 +68,7 @@ namespace Controllers
         [HttpDelete, Produces("application/json"), Route("{reservationId}")]
         public async Task<IActionResult> DeleteReservation(Guid reservationId)
         {
-            var result = await _repo.DeleteReservation(reservationId);
+            var result = await _repository.DeleteReservation(reservationId);
 
             return result ? NoContent() : NotFound();
         }

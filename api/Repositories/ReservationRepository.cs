@@ -5,7 +5,7 @@ using Models.Errors;
 
 namespace Repositories
 {
-    public class ReservationRepository
+    public class ReservationRepository : IReservationRepository
     {
         private IDbConnection _db { get; set; }
 
@@ -49,10 +49,15 @@ namespace Repositories
 
         public async Task<Reservation> CreateReservation(Reservation newReservation)
         {
-            // TODO Implement
-            return await Task.FromResult(
-                new Reservation { RoomNumber = "000", GuestEmail = "todo" }
+            var reservationDb = new ReservationDb(newReservation);
+
+            await _db.ExecuteAsync(
+                @"INSERT INTO Reservations (Id, GuestEmail, RoomNumber, Start, End, CheckedIn, CheckedOut)
+                  VALUES (@Id, @GuestEmail, @RoomNumber, @Start, @End, @CheckedIn, @CheckedOut);",
+                reservationDb
             );
+
+            return reservationDb.ToDomain();
         }
 
         public async Task<bool> DeleteReservation(Guid reservationId)

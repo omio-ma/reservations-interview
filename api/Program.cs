@@ -1,4 +1,5 @@
 using System.Data;
+using api.Services;
 using Db;
 using Microsoft.Data.Sqlite;
 using Repositories;
@@ -16,7 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
     Services.AddSingleton<IDbConnection>(sp => sp.GetRequiredService<SqliteConnection>());
     Services.AddSingleton<GuestRepository>();
     Services.AddSingleton<RoomRepository>();
-    Services.AddSingleton<ReservationRepository>();
+    Services.AddScoped<IReservationRepository, ReservationRepository>();
+    Services.AddScoped<IReservationService, ReservationService>();
     Services.AddMvc(opt =>
     {
         opt.EnableEndpointRouting = false;
