@@ -1,4 +1,5 @@
-﻿using Controllers;
+﻿using Services.Errors;
+using Controllers;
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
@@ -157,6 +158,33 @@ namespace api.unit.tests.Controllers
             var actionResult = Assert.IsType<ActionResult<Reservation>>(result);
             var serverErrorResult = Assert.IsType<ObjectResult>(actionResult.Result);
             serverErrorResult.StatusCode.Should().Be(500);
+        }
+
+        [Fact]
+        public async Task CreateReservation_DoubleBooking_ReturnsConflict()
+        {
+            // Arrange
+            var request = new ReservationRequest
+            {
+                RoomNumber = "101",
+                GuestEmail = "test@example.com",
+                Start = DateTime.Now,
+                End = DateTime.Now.AddDays(2)
+            };
+
+            _mockValidator.Setup(v => v.ValidateAsync(request, default))
+                          .ReturnsAsync(new ValidationResult());
+
+            _mockService.Setup(s => s.CreateReservation(request))
+                        .ThrowsAsync(new DoubleBookException(int.Parse(request.RoomNumber), request.Start, request.End));
+
+            // Act
+            var result = await _controller.CreateReservation(request);
+
+            // Assert
+            var actionResult = Assert.IsType<ActionResult<Reservation>>(result);
+            var conflictResult = Assert.IsType<ObjectResult>(actionResult.Result);
+            conflictResult.StatusCode.Should().Be(409);
         }
     }
 }

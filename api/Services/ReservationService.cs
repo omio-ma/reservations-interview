@@ -1,6 +1,7 @@
 ﻿using Models;
 using Models.Errors;
 using Repositories;
+using Services.Errors;
 using Services.Interfaces;
 
 namespace Services
@@ -32,6 +33,13 @@ namespace Services
             if (roomExists == null)
             {
                 throw new InvalidRoomNumber(request.RoomNumber);
+            }
+            var roomNumberFormatted = Room.ConvertRoomNumberToInt(request.RoomNumber);
+
+            var isDoubleBooked = await _reservationRepository.IsRoomDoubleBooked(roomNumberFormatted, request.Start, request.End);
+            if (isDoubleBooked)
+            {
+                throw new DoubleBookException(roomNumberFormatted, request.Start, request.End);
             }
 
             var reservation = new Reservation

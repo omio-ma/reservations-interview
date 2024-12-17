@@ -4,6 +4,7 @@ using Models.Errors;
 using Moq;
 using Repositories;
 using Services;
+using Services.Errors;
 
 namespace api.unit.tests.Services
 {
@@ -77,6 +78,33 @@ namespace api.unit.tests.Services
             var act = async () => await _service.CreateReservation(request);
 
             await act.Should().ThrowAsync<InvalidRoomNumber>();
+        }
+
+        [Fact]
+        public async Task CreateReservation_DoubleBooking_ThrowsDoubleBookException()
+        {
+            // Arrange
+            var request = new ReservationRequest
+            {
+                RoomNumber = "101",
+                GuestEmail = "test@example.com",
+                Start = DateTime.Now,
+                End = DateTime.Now.AddDays(1)
+            };
+
+            var mockRoom = new Room { Number = "101", State = State.Ready };
+
+            _mockRoomRepo.Setup(r => r.GetRoom(request.RoomNumber))
+                         .ReturnsAsync(mockRoom);
+
+            _mockReservationRepo.Setup(r => r.IsRoomDoubleBooked(int.Parse(request.RoomNumber), request.Start, request.End))
+                                .ReturnsAsync(true);
+
+            // Act
+            var act = async () => await _service.CreateReservation(request);
+
+            // Assert
+            await act.Should().ThrowAsync<DoubleBookException>();
         }
     }
 }

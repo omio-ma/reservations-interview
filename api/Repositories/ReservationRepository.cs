@@ -70,6 +70,22 @@ namespace Repositories
             return deleted > 0;
         }
 
+        public async Task<bool> IsRoomDoubleBooked(int roomNumber, DateTime start, DateTime end)
+        {
+            var query = @"
+                        SELECT COUNT(1) 
+                        FROM Reservations 
+                        WHERE RoomNumber = @roomNumber
+                          AND NOT (@End <= Start OR @Start >= End)";
+
+            var count = await _db.ExecuteScalarAsync<int>(
+                query,
+                new { roomNumber, Start = start, End = end }
+            );
+
+            return count > 0;
+        }
+
         private class ReservationDb
         {
             public string Id { get; set; }

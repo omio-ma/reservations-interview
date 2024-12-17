@@ -2,7 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Errors;
-using Repositories;
+using Services.Errors;
 using Services.Interfaces;
 
 namespace Controllers
@@ -62,6 +62,10 @@ namespace Controllers
             {
                 var createdReservation = await _service.CreateReservation(reservationRequest);
                 return CreatedAtAction(nameof(GetReservation), new { reservationId = createdReservation.Id }, createdReservation);
+            }
+            catch (DoubleBookException ex)
+            {
+                return StatusCode(409, ex.Message);
             }
             catch (InvalidRoomNumber ex)
             {
