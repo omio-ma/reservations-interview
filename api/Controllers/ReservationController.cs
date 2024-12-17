@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Errors;
@@ -10,10 +11,14 @@ namespace Controllers
     public class ReservationController : Controller
     {
         private IReservationService _service;
+        private readonly IValidator<ReservationRequest> _validator;
 
-        public ReservationController(IReservationRepository reservationRepository, IReservationService reservationService)
+        public ReservationController(
+            IReservationService reservationService, 
+            IValidator<ReservationRequest> validator)
         {
             _service = reservationService;
+            _validator = validator;
         }
 
         [HttpGet, Produces("application/json"), Route("")]
@@ -25,7 +30,7 @@ namespace Controllers
         }
 
         [HttpGet, Produces("application/json"), Route("{reservationId}")]
-        public async Task<ActionResult<Reservation>> GetRepository(Guid reservationId)
+        public async Task<ActionResult<Reservation>> GetReservation(Guid reservationId)
         {
             try
             {
@@ -48,17 +53,23 @@ namespace Controllers
             [FromBody] ReservationRequest reservationRequest
         )
         {
+            var validationResult = await _validator.ValidateAsync(reservationRequest);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
             try
             {
                 var createdReservation = await _service.CreateReservation(reservationRequest);
-                return CreatedAtAction(nameof(CreateReservation), new { reservationId = createdReservation.Id }, createdReservation);
+                return CreatedAtAction(nameof(GetReservation), new { reservationId = createdReservation.Id }, createdReservation);
+            }
+            catch (InvalidRoomNumber ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("An error occured when trying to book a reservation:");
-                Console.WriteLine(ex.ToString());
-
-                return BadRequest("Invalid reservation");
+                return StatusCode(500, $"An error occured when trying to book a reservation: {ex.Message}");
             }
         }
 

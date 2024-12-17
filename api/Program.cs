@@ -4,6 +4,9 @@ using Services.Interfaces;
 using Db;
 using Microsoft.Data.Sqlite;
 using Repositories;
+using FluentValidation;
+using Models;
+using Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +32,9 @@ var builder = WebApplication.CreateBuilder(args);
     Services.AddScoped<IReservationService, ReservationService>();
     Services.AddScoped<IRoomService, RoomService>();
     Services.AddScoped<IGuestService, GuestService>();
+
+    // Validators 
+    Services.AddScoped<IValidator<ReservationRequest>, ReservationValidator>();
 
     // Other services
     Services.AddMvc(opt =>

@@ -3,3 +3,13 @@
 # Visual Studio files
 .vscode/
 *.vs/
+
+# Build files
+bin/
+obj/
+*.user
+*.suo
+*.log
+*.lock
+*.tmp
+*.bak

@@ -1,8 +1,7 @@
 ﻿using Models;
-using Services.Interfaces;
-using Models;
 using Models.Errors;
 using Repositories;
+using Services.Interfaces;
 
 namespace Services
 {
@@ -32,7 +31,7 @@ namespace Services
             var roomExists = await _roomRepository.GetRoom(request.RoomNumber);
             if (roomExists == null)
             {
-                throw new InvalidRoomNumber($"Room {request.RoomNumber} does not exist.");
+                throw new InvalidRoomNumber(request.RoomNumber);
             }
 
             var reservation = new Reservation
