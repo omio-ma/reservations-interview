@@ -7,6 +7,7 @@ using Repositories;
 using FluentValidation;
 using Models;
 using Validators;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,19 @@ var builder = WebApplication.CreateBuilder(args);
 
     // Validators 
     Services.AddScoped<IValidator<ReservationRequest>, ReservationValidator>();
+
+    // Authentication
+    Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+        .AddCookie(options =>
+        {
+            options.LoginPath = "/staff/login";
+            options.Cookie.Name = "access";
+            options.Cookie.HttpOnly = true;
+            options.Cookie.SameSite = SameSiteMode.Strict;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        });
+
+    Services.AddAuthorization();
 
     // Other services
     Services.AddMvc(opt =>
@@ -65,6 +79,8 @@ var app = builder.Build();
     app.UsePathBase("/api")
         .UseMvc()
         .UseCors(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader())
+        .UseAuthentication()
+        .UseAuthorization()
         .UseSwagger()
         .UseSwaggerUI();
 }

@@ -1,4 +1,8 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Controllers
 {
@@ -32,7 +36,7 @@ namespace Controllers
         }
 
         [HttpGet, Route("login")]
-        public IActionResult CheckCode([FromHeader(Name = "X-Staff-Code")] string accessCode)
+        public async Task<IActionResult> CheckCode([FromHeader(Name = "X-Staff-Code")] string accessCode)
         {
             var configuredSecret = Config.GetValue<string>("staffAccessCode");
             if (configuredSecret != accessCode)
@@ -40,29 +44,28 @@ namespace Controllers
                 // don't set cookie, don't indicate anything
                 return NoContent();
             }
-            Response.Cookies.Append(
-                "access",
-                "1",
-                new CookieOptions
-                // TODO evaluate cookie options & auth mechanism for best security practices
-                {
-                    IsEssential = true,
-                    SameSite = SameSiteMode.Strict,
-                    HttpOnly = true,
-                    Secure = true
-                }
-            );
-            return NoContent();
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Role, "Staff")
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, "Cookie");
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1)
+            };
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+
+
+            return Ok();
         }
 
         [HttpGet, Route("check")]
+        [Authorize]
         public IActionResult CheckCookie()
         {
-            if (IsNotStaff(Request, out IActionResult? result))
-            {
-                return result!;
-            }
-
             return Ok("Authorized");
         }
     }
