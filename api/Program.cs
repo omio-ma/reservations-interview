@@ -77,10 +77,10 @@ var app = builder.Build();
     }
 
     app.UsePathBase("/api")
-        .UseMvc()
         .UseCors(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader())
         .UseAuthentication()
         .UseAuthorization()
+        .UseMvc()
         .UseSwagger()
         .UseSwaggerUI();
 }

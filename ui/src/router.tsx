@@ -1,14 +1,17 @@
 import {
   createRootRoute,
   createRoute,
-  createRouter,
+  createRouter
 } from "@tanstack/react-router";
 import { Layout } from "./Layout";
 import { LandingPage } from "./LandingPage";
 import { ReservationPage } from "./reservations/ReservationPage";
+import { StaffPage } from "./staff/StaffPage";
+import { isStaffAuthenticated } from "./api/staff";
+import { redirect } from "@tanstack/react-router";
 
 const rootRoute = createRootRoute({
-  component: Layout,
+  component: Layout
 });
 
 function getRootRoute() {
@@ -19,13 +22,24 @@ const ROUTES = [
   createRoute({
     path: "/",
     getParentRoute: getRootRoute,
-    component: LandingPage,
+    component: LandingPage
   }),
   createRoute({
     path: "/reservations",
     getParentRoute: getRootRoute,
-    component: ReservationPage,
+    component: ReservationPage
   }),
+  createRoute({
+    path: "/staff-page",
+    getParentRoute: getRootRoute,
+    component: StaffPage,
+    beforeLoad: async () => {
+      const isAuthenticated = await isStaffAuthenticated();
+      if (!isAuthenticated) {
+        throw redirect({ to: "/" });
+      }
+    }
+  })
 ];
 
 const routeTree = rootRoute.addChildren(ROUTES);

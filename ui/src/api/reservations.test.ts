@@ -8,7 +8,7 @@ jest.mock("../api/client", () => ({
   }
 }));
 
-describe("bookRoom", () => {
+describe("reservations.ts", () => {
   const mockBooking = {
     RoomNumber: "101",
     GuestEmail: "test@example.com",

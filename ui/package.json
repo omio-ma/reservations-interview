@@ -7,7 +7,8 @@
     "build": "rsbuild build",
     "preview": "rsbuild preview",
     "pretty:fix": "prettier --write .",
-    "test": "jest"
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@datepicker-react/styled": "^2.8.4",
